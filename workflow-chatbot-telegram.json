@@ -26,13 +26,34 @@
     },
     {
       "parameters": {
-        "url": "=https://api.openweathermap.org/data/2.5/weather?q={{ $json.analise.message }}&APPID={{ $env.OPENWEATHER_API_KEY }}&units=metric",
+        "url": "=https://api.openweathermap.org/data/2.5/weather",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "appid",
+              "value": "={{ $env.OPENWEATHER_API_KEY }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ $json.analise.message }}"
+            },
+            {
+              "name": "units",
+              "value": "metric"
+            },
+            {
+              "name": "lang",
+              "value": "pt_br"
+            }
+          ]
+        },
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        896,
+        1104,
         -32
       ],
       "id": "dc0249c9-f021-4cfb-aecd-cac4025f868f",
@@ -50,7 +71,7 @@
         "responses": {
           "values": [
             {
-              "content": "=You are an agent that takes the user's message and tries to extract the city and state (UF) to pass to another service via JSON.\n\nYour goal is to obtain a user message that contains the city and the state.\n\nIn the JSON, you must set the \"success\" attribute to true if you could successfully extract the city and state from the message. If extraction fails, set \"success\" to false. The \"recomendation\" attribute should contain a message instructing the user to provide the city for which they want information if extraction failed; if city and state are extracted successfully, \"recomendation\" should be null.\n\nYou must extract the city and state from the message, and the \"message\" attribute MUST ALWAYS BE IN THE FORMAT: \"City, UF\":\n\n<message>\n{{ $json.message.text }}\n</message>\n\nInput message examples: \n\n| 1.1 | `Oi quero saber a temp de London, UK`         | Output: London, UK      |\n| 1.2 | `Qual a temperatura em Londres?`              | Output: London, UK      |\n| 1.3 | `Diga qual a de New York, US`                 | Output: New York, US    |\n| 1.4 | `Qual a temperatura de Tokyo, JP`             | Output: Tokyo, JP       |\n| 1.5 | `Paris, FR`                                   | Output: Paris, FR       |\n| 1.6 | `Salvador, BA`                                | Output: Salvador, BR    |\n| 1.7 | `São Paulo, SP`                               | Output: São Paulo, BR   |\n| 1.8 | `Curitiba, PR`                                | Output: Curitiba, BR    |\n| 1.9 | `Recife, PE`                                  | Output: Recife, BR      |\n| 1.10 | `Rio de Janeiro, RJ`                         | Output: Rio de Janeiro, BR |\n| 1.11 | `Sydney, AU`                                 | Output: Sydney, AU      |\n| 1.12 | `Lisbon, PT`                                 | Output: Lisbon, PT      |\n\nExample output, in JSON format:\n\n{\n  \"message\": \"São Paulo, SP\",\n  \"success\": true | false,\n  \"recomendation\": \"Recommendation text\"\n}\n"
+              "content": "=You are an agent that takes the user's message and tries to extract the city and state (UF) to pass to another service via JSON.\n\nYour goal is to obtain a user message that contains the city and the state.\n\nIn the JSON, you must set the \"success\" attribute to true if you could successfully extract the city and state from the message. If extraction fails, set \"success\" to false. The \"recomendation\" attribute should contain a message \"❌ Cidade não encontrada. Use o formato Cidade,UF (ex.: São Paulo,SP).\"; if city and state are extracted successfully, \"recomendation\" should be null.\n\nYou must extract the city and state from the message, and the \"message\" attribute MUST ALWAYS BE IN THE FORMAT: \"City, UF\":\n\n<message>\n{{ $json.queue }}\n</message>\n\nInput message examples: \n\n| 1.1 | `Oi quero saber a temp de London, UK`         | Output: London, UK      |\n| 1.2 | `Qual a temperatura em Londres?`              | Output: London, UK      |\n| 1.3 | `Diga qual a de New York, US`                 | Output: New York, US    |\n| 1.4 | `Qual a temperatura de Tokyo, JP`             | Output: Tokyo, JP       |\n| 1.5 | `Paris, FR`                                   | Output: Paris, FR       |\n| 1.6 | `Salvador, BA`                                | Output: Salvador, BR    |\n| 1.7 | `São Paulo, SP`                               | Output: São Paulo, BR   |\n| 1.8 | `Curitiba, PR`                                | Output: Curitiba, BR    |\n| 1.9 | `Recife, PE`                                  | Output: Recife, BR      |\n| 1.10 | `Rio de Janeiro, RJ`                         | Output: Rio de Janeiro, BR |\n| 1.11 | `Sydney, AU`                                 | Output: Sydney, AU      |\n| 1.12 | `Lisbon, PT`                                 | Output: Lisbon, PT      |\n\nExample output, in JSON format:\n\n{\n  \"message\": \"São Paulo, SP\",\n  \"success\": true | false,\n  \"recomendation\": \"Recommendation text\"\n}\n"
             }
           ]
         },
@@ -66,7 +87,7 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 2.1,
       "position": [
-        128,
+        336,
         -16
       ],
       "id": "2eeb0014-004d-4836-a1ff-2d2e29f15fd2",
@@ -95,7 +116,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        464,
+        672,
         -16
       ],
       "id": "34f1e99d-99ba-484f-93dc-5e5b8923a5c9",
@@ -128,7 +149,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        672,
+        880,
         -16
       ],
       "id": "ad26ac76-2ea0-42e0-b085-62c3cd33a1a1",
@@ -143,7 +164,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        928,
+        1136,
         272
       ],
       "id": "1f69ed40-181c-4b3a-aad7-197a28167377",
@@ -161,7 +182,7 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        1136,
+        1344,
         272
       ],
       "id": "94633dea-4891-4ea0-b36c-cbbe42ea0685",
@@ -174,7 +195,7 @@
             {
               "id": "44352870-b87e-4175-ad7d-90c7992217e9",
               "name": "message",
-              "value": "=A temperatura em {{ $json.name }} é {{ parseInt($json.main.temp) }}ºC",
+              "value": "=🌤️ A temperatura em {{ $json.name }} é de {{ parseInt($json.main.temp) }}ºC",
               "type": "string"
             }
           ]
@@ -184,7 +205,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1120,
+        1328,
         -176
       ],
       "id": "db337218-014f-4a98-99ab-07c50abd6545",
@@ -199,7 +220,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1328,
+        1536,
         -176
       ],
       "id": "422914b6-6e1d-4b79-85b5-98b4fbc1d4ed",
@@ -215,13 +236,13 @@
     {
       "parameters": {
         "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
-        "text": "Infelizmente a API não identificou a sua cidade, tente outra, por exemplo London, UK",
+        "text": "❌ Cidade não encontrada. Use o formato Cidade,UF (ex.: São Paulo,SP).",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1120,
+        1328,
         16
       ],
       "id": "1ed8496b-6cbc-4257-a01e-d90739d81631",
@@ -233,6 +254,29 @@
           "name": "Telegram account"
         }
       }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1e15c69c-d9d7-423c-b5d3-1ec89fdc7bb3",
+              "name": "queue",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        144,
+        -16
+      ],
+      "id": "812c4d43-cec1-4283-a413-1270acf0a5a1",
+      "name": "Edit Fields2"
     }
   ],
   "pinData": {},
@@ -241,7 +285,7 @@
       "main": [
         [
           {
-            "node": "Message a model",
+            "node": "Edit Fields2",
             "type": "main",
             "index": 0
           }
@@ -327,6 +371,17 @@
           }
         ]
       ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -335,7 +390,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "654e1e7b-f16f-4a13-ad2e-31a9a56e929d",
+  "versionId": "cbf83d52-3357-4d20-ad8c-102f82865bdc",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "19b7e6e45614bd2daa68f512d1c5c1c9a67cc27272ba31534117da62841252a0"
