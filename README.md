@@ -213,46 +213,94 @@ Depois: `sudo systemctl restart n8n`.
 
 ### Docker (run)
 
-Passe a variável com `-e`:
+É preciso subir **n8n** e **PostgreSQL**. Crie uma rede, inicie o Postgres e depois o n8n:
 
 ```bash
-docker run -it --rm \
+# Criar rede
+docker network create chatbot-net
+
+# Postgres (rode em background; ajuste usuário/senha/banco)
+docker run -d --name postgres-chatbot --network chatbot-net \
+  -e POSTGRES_USER=n8n \
+  -e POSTGRES_PASSWORD=senha_segura \
+  -e POSTGRES_DB=chatbot \
+  -p 5432:5432 \
+  postgres:16-alpine
+
+# n8n (use o mesmo usuário/senha/banco na credencial Postgres no n8n; host = postgres-chatbot)
+docker run -it --rm --network chatbot-net \
   -p 5678:5678 \
   -e OPENWEATHER_API_KEY=sua_chave_openweather_aqui \
   n8nio/n8n
 ```
 
+Na credencial **Postgres** no n8n use: **Host** = `postgres-chatbot`, **Database** = `chatbot`, **User** = `n8n`, **Password** = `senha_segura`, **Port** = `5432`.
+
 ---
 
 ### Docker Compose
 
-**Arquivo `docker-compose.yml`:**
+**Arquivo `docker-compose.yml`** (n8n + PostgreSQL):
 
 ```yaml
 version: "3"
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-n8n}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-chatbot}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-n8n} -d ${POSTGRES_DB:-chatbot}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   n8n:
     image: n8nio/n8n
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "5678:5678"
     environment:
       - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  postgres_data:
+  n8n_data:
 ```
 
 **Arquivo `.env`** (na mesma pasta do `docker-compose.yml`):
 
 ```bash
-# Variáveis para o chatbot de clima
+# OpenWeather
 OPENWEATHER_API_KEY=sua_chave_openweather_aqui
+
+# PostgreSQL (use estes mesmos valores na credencial Postgres no n8n)
+POSTGRES_USER=n8n
+POSTGRES_PASSWORD=senha_segura
+POSTGRES_DB=chatbot
 ```
 
-Subir o stack:
+**Subir o stack:**
 
 ```bash
 docker compose up -d
 # ou: docker-compose up -d
 ```
+
+Na credencial **Postgres** no n8n use: **Host** = `postgres`, **Database** = valor de `POSTGRES_DB` (ex.: `chatbot`), **User** = valor de `POSTGRES_USER`, **Password** = valor de `POSTGRES_PASSWORD`, **Port** = `5432`.
 
 Lembre-se: após o primeiro acesso ao n8n, configure as credenciais **Telegram API**, **Google Gemini (PaLM) API** e **PostgreSQL** na interface, conforme a seção [Credenciais no n8n](#credenciais-no-n8n).
 
